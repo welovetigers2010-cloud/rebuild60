@@ -1,1 +1,21 @@
-{"name": "REBUILD·60 重建计划", "short_name": "Rebuild60", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#070707", "theme_color": "#070707", "icons": [{"src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}]}
+{
+ "name": "60天全量重排 · 训练计划",
+ "short_name": "REBUILD 60",
+ "start_url": "./",
+ "display": "standalone",
+ "background_color": "#D6FF3D",
+ "theme_color": "#D6FF3D",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
