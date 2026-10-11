@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>REBUILD·60 重建计划</title>
+<style>
+:root{
+  --bg:#070707; --panel:#0E0E0D; --panel2:#131311;
+  --ink:#F2F2EC; --dim:#7C7C74; --line:#26261F;
+  --acid:#D6FF3D; --acid-dim:rgba(214,255,61,.14);
+  --hot:#FF6B35; --hot-dim:rgba(255,107,53,.12);
+  --cyan:#43E8FF; --yellow:#FFD23D; --red:#FF3D5A;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Consolas,"Courier New",monospace;
+  --disp:"Arial Black","Avenir Next Condensed",-apple-system,"PingFang SC",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--ink);
+  background-image:
+    linear-gradient(rgba(214,255,61,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(214,255,61,.025) 1px, transparent 1px);
+  background-size:44px 44px;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Segoe UI",sans-serif;
+  max-width:640px; margin:0 auto; padding:0 18px calc(48px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+header{padding:46px 0 0}
+.kicker{font-family:var(--mono); font-size:11px; color:var(--acid); letter-spacing:.28em; text-transform:uppercase}
+.kicker .sl{color:var(--dim)}
+h1{font-family:var(--disp); font-weight:900; font-style:italic; font-size:56px; line-height:.95; letter-spacing:-.02em; margin:12px 0 4px; text-transform:uppercase}
+h1 .n{color:var(--acid); font-size:72px}
+h1 .zh{display:block; font-size:22px; letter-spacing:.04em; color:var(--ink); font-style:normal; margin-top:10px; font-family:-apple-system,"PingFang SC",sans-serif; font-weight:800}
+.brief{margin-top:14px; font-size:12.5px; line-height:1.85; color:var(--dim)}
+.brief b{color:var(--ink); font-weight:600}
+.brief .hl{color:var(--acid)}
+.brief .c1{color:var(--cyan)} .brief .c2{color:var(--yellow)} .brief .c3{color:var(--hot)} .brief .c4{color:var(--red)}
+.hud{display:flex; border:1px solid var(--line); background:var(--panel); margin-top:24px}
+.hud .cell{flex:1; padding:16px 14px 14px; border-right:1px solid var(--line)}
+.hud .cell:last-child{border-right:none}
+.hud .num{font-family:var(--disp); font-weight:900; font-style:italic; font-size:32px; line-height:1}
+.hud .num em{font-size:16px; color:var(--dim); margin-left:2px}
+.hud .cell.g .num{color:var(--acid)}
+.hud .cell.o .num{color:var(--hot)}
+.hud .lab{font-family:var(--mono); font-size:9px; letter-spacing:.2em; color:var(--dim); margin-top:7px; text-transform:uppercase}
+.phases{display:flex; gap:4px; margin:18px 0 6px}
+.phases span{flex:1; height:6px; background:var(--panel2); border:1px solid var(--line); position:relative; overflow:hidden}
+.phases span i{position:absolute; inset:0; width:0; background:var(--acid); box-shadow:0 0 12px rgba(214,255,61,.5); transition:width .5s}
+.plabels{display:flex; gap:4px; margin-bottom:26px}
+.plabels span{flex:1; font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; color:var(--dim); text-align:center; padding-top:5px; white-space:nowrap}
+.week{border:1px solid var(--line); background:var(--panel); margin-bottom:14px}
+.week-head{display:flex; align-items:center; gap:12px; padding:15px 16px; cursor:pointer; user-select:none}
+.wk-tag{font-family:var(--disp); font-weight:900; font-style:italic; font-size:15px; background:var(--ink); color:var(--bg); padding:7px 12px 6px; flex:none; line-height:1; clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%); transition:all .3s}
+.week.fin .wk-tag{background:var(--red); box-shadow:0 0 16px rgba(255,61,90,.35)}
+.week.done .wk-tag{background:var(--acid)}
+.week-head .wt{flex:1; min-width:0}
+.week-head .t{font-size:15px; font-weight:800; letter-spacing:.04em}
+.week-head .d{font-family:var(--mono); font-size:9px; color:var(--dim); letter-spacing:.14em; margin-top:3px}
+.wdots{display:flex; gap:3px; flex:none}
+.wdots i{width:6px; height:6px; background:var(--panel2); border:1px solid var(--line); transform:rotate(45deg); transition:all .3s}
+.wdots i.on{background:var(--acid); border-color:var(--acid); box-shadow:0 0 6px rgba(214,255,61,.6)}
+.wdots i.rest{opacity:.35}
+.chev{font-family:var(--mono); font-size:11px; color:var(--dim); transition:transform .25s; flex:none}
+.week.open .chev{transform:rotate(90deg)}
+.week-body{display:none; border-top:1px solid var(--line)}
+.week.open .week-body{display:block}
+.day{border-top:1px solid var(--line); position:relative}
+.day:first-child{border-top:none}
+.dbar{position:absolute; left:0; top:0; bottom:0; width:3px; opacity:.55}
+.day.on .dbar{opacity:1; box-shadow:0 0 10px currentColor}
+.day-row{display:flex; align-items:flex-start; gap:13px; padding:15px 16px 13px 19px; cursor:pointer}
+.dnum{font-family:var(--disp); font-weight:900; font-style:italic; font-size:25px; width:50px; flex:none; line-height:1; color:var(--dim); transition:all .25s; letter-spacing:-.02em}
+.dnum small{display:block; font-family:var(--mono); font-size:8px; font-style:normal; font-weight:400; letter-spacing:.18em; margin-top:4px}
+.l-main{flex:1; min-width:0}
+.dtype{font-family:var(--mono); font-size:10px; letter-spacing:.16em; font-weight:700; margin-bottom:7px}
+.item{display:flex; align-items:baseline; gap:8px; padding:3.5px 0; font-size:14px; font-weight:600}
+.item .no{font-family:var(--mono); font-size:10px; color:var(--dim); flex:none; width:18px}
+.item .od{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:none; letter-spacing:.02em}
+.item .nm{flex:1; min-width:0; letter-spacing:.01em}
+.item .tm{font-family:var(--mono); font-size:11px; color:var(--dim); flex:none}
+.day.on .item{color:var(--acid)}
+.day.on .item .tm{color:var(--acid)}
+.item:only-child{padding:6px 0}
+.check{width:28px; height:28px; flex:none; border:1.6px solid #3A3A33; transform:rotate(45deg); display:flex; align-items:center; justify-content:center; transition:all .25s; margin-top:8px; background:transparent}
+.check svg{width:13px; height:13px; stroke:var(--bg); stroke-width:3.4; fill:none; stroke-linecap:round; stroke-linejoin:round; opacity:0; transform:rotate(-45deg) scale(.4); transition:all .25s}
+.day.on .check{background:var(--acid); border-color:var(--acid); box-shadow:0 0 14px rgba(214,255,61,.5)}
+.day.on .check svg{opacity:1; transform:rotate(-45deg) scale(1)}
+.day.rest .day-row{padding:11px 16px 11px 19px; align-items:center}
+.day.rest .dnum{font-size:16px; font-style:normal; font-family:var(--mono); letter-spacing:.1em}
+.day.rest .dtype{margin-bottom:0}
+.day.rest .check{margin-top:0; border-style:dashed}
+.day.rest.on .check{background:var(--hot); border-color:var(--hot); box-shadow:0 0 14px rgba(255,107,53,.5)}
+.day.rest.on .item,.day.rest.on .dtype{color:var(--hot)}
+.day.rest.on .dnum{color:var(--hot)}
+.day.fin .dnum{color:var(--red)}
+.day.fin.on .dnum{color:var(--acid)}
+.day.fin .dbar{box-shadow:none}
+footer{margin-top:26px}
+.note{font-family:var(--mono); font-size:10px; color:var(--dim); line-height:1.9; padding:16px 0 0; border-top:1px solid var(--line); letter-spacing:.03em}
+.note b{color:#A8A89E}
+.reset-wrap{display:flex; justify-content:space-between; align-items:center; margin-top:20px}
+.reset-wrap .brand{font-family:var(--mono); font-size:9px; color:var(--dim); letter-spacing:.2em}
+.btn-reset{font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--bg); background:var(--acid); border:none; padding:10px 18px; cursor:pointer; font-weight:700; clip-path:polygon(8px 0,100% 0,100% 100%,0 100%)}
+.btn-reset:active{transform:scale(.95)}
+.cf{position:fixed; z-index:99; pointer-events:none}
+#flash{position:fixed; inset:0; background:var(--acid); opacity:0; pointer-events:none; z-index:98}
+#toast{position:fixed; left:50%; bottom:44px; transform:translateX(-50%) translateY(20px); opacity:0; background:var(--acid); color:var(--bg); font-family:var(--mono); font-weight:700; font-size:12px; letter-spacing:.12em; padding:12px 24px; transition:all .3s; pointer-events:none; white-space:nowrap; z-index:99; clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+@keyframes flashAnim{0%{opacity:.28}100%{opacity:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">OPERATION <span class="sl">///</span> FULL REBUILD</div>
+  <h1><span class="n">60</span> DAYS<br><span class="zh">100节课 × 0删减 · 同类合并重排</span></h1>
+  <p class="brief">原计划 <b>100 节课全部保留</b>（47.6h 一分钟不砍），同类合并：<span class="hl">下肢日</span>练两节臀腿、<span class="c1">上肢日</span>练两节肩背胸臂、<span class="c2">核心日</span>两节腹肌、<span class="c3">功能日</span>两节足弓/髋/脊柱、<span class="c4">冲刺日</span>两节冲刺——<b>每天只碰一个部位</b>，打开 App 一眼分清练什么。每天 <b>①② 两节连练</b>（中间歇 3–5 分钟），每周日完全休息。练日均 <b>55 分钟</b>，最猛一天 <b>Day 02 = 83 分钟</b>；同一肌群全部间隔 ≥3 天（脚本逐位验证）。</p>
+</header>
+<div class="hud">
+  <div class="cell g"><div class="num" id="hSes">0<em>/52</em></div><div class="lab">Sessions Cleared</div></div>
+  <div class="cell o"><div class="num" id="hRest">0<em>/8</em></div><div class="lab">Rest Claimed</div></div>
+  <div class="cell"><div class="num" id="hMin">0<em>min</em></div><div class="lab">Total Trained</div></div>
+</div>
+<div class="phases" id="phases"></div>
+<div class="plabels"><span>01 唤醒</span><span>02 强化</span><span>03 力量</span><span>04 巅峰</span><span>05 终局</span></div>
+<main id="app"></main>
+<footer>
+  <p class="note"><b>/// BRIEFING</b>　每天 ①② 两节同类课连练，第一节做完歇 3–5 分钟再做第二节；颜色即部位：<span style="color:var(--acid)">绿=下肢</span>、<span style="color:var(--cyan)">青=上肢</span>、<span style="color:var(--yellow)">黄=核心</span>、<span style="color:var(--hot)">橙=功能</span>、<span style="color:var(--red)">红=冲刺</span>。周日 REST 完全休息，也支持打卡——躺平也是计划的一部分。<br><b>/// WARNING</b>　本页为训练安排工具，非医疗建议。关节疼痛、孕期或身体不适请先咨询医生；训练中持续疼痛请立即停止并就医。</p>
+  <div class="reset-wrap">
+    <span class="brand">REBUILD·60 /// ALL 100 SESSIONS INCLUDED</span>
+    <button class="btn-reset" id="btnReset">重置全部</button>
+  </div>
+</footer>
+<div id="flash"></div>
+<div id="toast"></div>
+<script>
+const PLAN = [{"d":1,"t":"test","c":[[7,"自重全身训练","42:12"]]},{"d":2,"t":"lower","c":[[2,"自重臀腿训练","41:08"],[4,"自重臀部训练","42:01"]]},{"d":3,"t":"upper","c":[[3,"自重上半身训练","32:46"],[10,"上半身训练","39:15"]]},{"d":4,"t":"mobi","c":[[5,"纠正与恢复日","12:14"],[11,"足弓功能建立","25:21"]]},{"d":5,"t":"mobi","c":[[14,"足弓功能建立","24:15"],[18,"髋关节功能建立","26:46"]]},{"d":6,"t":"upper","c":[[17,"肩背训练","35:31"],[24,"上半身训练","42:47"]]},{"d":7,"t":"R"},{"d":8,"t":"mobi","c":[[21,"髋关节功能建立","18:41"],[25,"足弓功能建立","28:32"]]},{"d":9,"t":"core","c":[[1,"腹肌与核心训练","25:41"],[6,"腹肌与核心训练","26:49"]]},{"d":10,"t":"lower","c":[[9,"臀腿训练","39:43"],[12,"臀部训练","34:27"]]},{"d":11,"t":"upper","c":[[31,"上半身训练","29:35"],[38,"上半身训练(胸、肩、背)","29:06"]]},{"d":12,"t":"mobi","c":[[28,"足弓功能建立","25:21"],[32,"髋关节功能恢复","22:51"]]},{"d":13,"t":"core","c":[[8,"腹肌与核心训练","21:52"],[13,"腹肌与核心训练","31:19"]]},{"d":14,"t":"R"},{"d":15,"t":"lower","c":[[16,"臀腿训练","31:55"],[19,"臀部训练","35:05"]]},{"d":16,"t":"upper","c":[[41,"肩膀及手臂训练","32:12"],[45,"肩膀及肱三头肌训练","32:23"]]},{"d":17,"t":"mobi","c":[[35,"髋关节功能恢复","27:04"],[39,"脊柱灵活性","22:10"]]},{"d":18,"t":"lower","c":[[23,"臀腿训练","32:53"],[26,"臀部训练","28:47"]]},{"d":19,"t":"upper","c":[[48,"胸&背部&手臂训练","29:30"],[50,"核心与手臂训练","31:59"]]},{"d":20,"t":"core","c":[[15,"腹肌与核心训练","22:14"],[20,"腹肌与核心训练","31:02"]]},{"d":21,"t":"R"},{"d":22,"t":"mobi","c":[[42,"脊柱灵活性","20:18"],[46,"脊柱灵活性","20:34"]]},{"d":23,"t":"lower","c":[[30,"臀腿训练","29:22"],[33,"臀部训练","35:13"]]},{"d":24,"t":"upper","c":[[52,"胸&背部训练","33:03"],[55,"肩膀&背部&手臂训练","30:39"]]},{"d":25,"t":"core","c":[[22,"腹肌与核心训练","21:52"],[27,"腹肌与核心训练","26:10"]]},{"d":26,"t":"lower","c":[[37,"臀腿训练","40:54"],[40,"臀部训练","32:29"]]},{"d":27,"t":"upper","c":[[57,"核心&手臂训练","33:14"],[59,"胸&背部训练","36:43"]]},{"d":28,"t":"R"},{"d":29,"t":"mobi","c":[[49,"脊柱灵活性","18:29"],[53,"全身伸展训练","17:10"]]},{"d":30,"t":"mobi","c":[[56,"纠正与恢复日","16:04"],[60,"纠正与恢复日","14:15"]]},{"d":31,"t":"lower","c":[[44,"臀腿训练","32:59"],[47,"臀部训练","35:18"]]},{"d":32,"t":"upper","c":[[62,"肩膀&背部训练","30:47"],[64,"核心&手臂训练","29:02"]]},{"d":33,"t":"mobi","c":[[63,"纠正与恢复日","14:34"],[67,"足弓功能建立","31:48"]]},{"d":34,"t":"lower","c":[[51,"臀腿训练","26:23"],[54,"臀部训练","35:18"]]},{"d":35,"t":"R"},{"d":36,"t":"upper","c":[[66,"胸大肌&肱三头肌训练","34:44"],[69,"背&肱二头肌训练","31:43"]]},{"d":37,"t":"core","c":[[29,"腹肌与核心训练","25:26"],[34,"腹肌与核心训练","20:55"]]},{"d":38,"t":"lower","c":[[58,"臀腿训练","33:32"],[61,"臀部训练","37:07"]]},{"d":39,"t":"upper","c":[[71,"肩膀&手臂训练","32:29"],[73,"胸&肱三头肌训练","27:29"]]},{"d":40,"t":"mobi","c":[[70,"足弓功能建立","24:05"],[74,"纠正与恢复日","20:50"]]},{"d":41,"t":"mobi","c":[[77,"髋关节功能建立","19:37"],[81,"足弓功能建立","28:28"]]},{"d":42,"t":"R"},{"d":43,"t":"lower","c":[[65,"臀腿训练","33:15"],[68,"臀部训练","32:28"]]},{"d":44,"t":"upper","c":[[76,"胸&背部训练","28:11"],[78,"肩膀&手臂训练","34:26"]]},{"d":45,"t":"mobi","c":[[84,"足弓功能建立","19:52"],[88,"髋关节功能建立","17:29"]]},{"d":46,"t":"lower","c":[[72,"臀腿训练","29:14"],[75,"臀部训练","32:30"]]},{"d":47,"t":"upper","c":[[80,"胸&肱三头肌训练","25:09"],[83,"肱二头肌&背部","21:53"]]},{"d":48,"t":"mobi","c":[[91,"髋关节功能建立","14:30"]]},{"d":49,"t":"R"},{"d":50,"t":"lower","c":[[79,"臀腿训练","28:26"],[82,"臀肌&腘绳肌训练","32:58"]]},{"d":51,"t":"upper","c":[[85,"手臂训练","33:30"],[87,"胸大肌&肱三头肌训练","27:57"]]},{"d":52,"t":"core","c":[[36,"腹肌与核心训练","23:11"],[43,"腹肌与核心训练","21:26"]]},{"d":53,"t":"lower","c":[[86,"臀腿训练","23:49"],[89,"臀肌&腘绳肌训练","30:48"]]},{"d":54,"t":"upper","c":[[90,"背部&肩膀训练","25:00"]]},{"d":55,"t":"sprint","c":[[92,"上半身冲刺训练","34:31"],[93,"下半身冲刺训练","32:38"]]},{"d":56,"t":"R"},{"d":57,"t":"sprint","c":[[94,"全身冲刺训练","27:29"],[95,"上半身冲刺训练","33:20"]]},{"d":58,"t":"sprint","c":[[96,"下半身冲刺训练","26:30"],[97,"上半身冲刺训练","23:18"]]},{"d":59,"t":"sprint","c":[[98,"全身冲刺训练","22:56"],[99,"全身冲刺训练","29:11"]]},{"d":60,"t":"sprint","c":[[100,"全身冲刺训练","36:39"]]}];
+const TS = {7:[2532,"42:12"],2:[2468,"41:08"],4:[2521,"42:01"],3:[1966,"32:46"],10:[2355,"39:15"],5:[734,"12:14"],11:[1521,"25:21"],14:[1455,"24:15"],18:[1606,"26:46"],17:[2131,"35:31"],24:[2567,"42:47"],21:[1121,"18:41"],25:[1712,"28:32"],1:[1541,"25:41"],6:[1609,"26:49"],9:[2383,"39:43"],12:[2067,"34:27"],31:[1775,"29:35"],38:[1746,"29:06"],28:[1521,"25:21"],32:[1371,"22:51"],8:[1312,"21:52"],13:[1879,"31:19"],16:[1915,"31:55"],19:[2105,"35:05"],41:[1932,"32:12"],45:[1943,"32:23"],35:[1624,"27:04"],39:[1330,"22:10"],23:[1973,"32:53"],26:[1727,"28:47"],48:[1770,"29:30"],50:[1919,"31:59"],15:[1334,"22:14"],20:[1862,"31:02"],42:[1218,"20:18"],46:[1234,"20:34"],30:[1762,"29:22"],33:[2113,"35:13"],52:[1983,"33:03"],55:[1839,"30:39"],22:[1312,"21:52"],27:[1570,"26:10"],37:[2454,"40:54"],40:[1949,"32:29"],57:[1994,"33:14"],59:[2203,"36:43"],49:[1109,"18:29"],53:[1030,"17:10"],56:[964,"16:04"],60:[855,"14:15"],44:[1979,"32:59"],47:[2118,"35:18"],62:[1847,"30:47"],64:[1742,"29:02"],63:[874,"14:34"],67:[1908,"31:48"],51:[1583,"26:23"],54:[2118,"35:18"],66:[2084,"34:44"],69:[1903,"31:43"],29:[1526,"25:26"],34:[1255,"20:55"],58:[2012,"33:32"],61:[2227,"37:07"],71:[1949,"32:29"],73:[1649,"27:29"],70:[1445,"24:05"],74:[1250,"20:50"],77:[1177,"19:37"],81:[1708,"28:28"],65:[1995,"33:15"],68:[1948,"32:28"],76:[1691,"28:11"],78:[2066,"34:26"],84:[1192,"19:52"],88:[1049,"17:29"],72:[1754,"29:14"],75:[1950,"32:30"],80:[1509,"25:09"],83:[1313,"21:53"],91:[870,"14:30"],79:[1706,"28:26"],82:[1978,"32:58"],85:[2010,"33:30"],87:[1677,"27:57"],36:[1391,"23:11"],43:[1286,"21:26"],86:[1429,"23:49"],89:[1848,"30:48"],90:[1500,"25:00"],92:[2071,"34:31"],93:[1958,"32:38"],94:[1649,"27:29"],95:[2000,"33:20"],96:[1590,"26:30"],97:[1398,"23:18"],98:[1376,"22:56"],99:[1751,"29:11"],100:[2199,"36:39"]};
+const TYPE = {
+  test:{n:'摸底日 FIELD TEST', c:'var(--cyan)'},
+  lower:{n:'下肢日 LOWER BODY', c:'var(--acid)'},
+  upper:{n:'上肢日 UPPER BODY', c:'var(--cyan)'},
+  core:{n:'核心日 CORE', c:'var(--yellow)'},
+  mobi:{n:'功能日 MOBILITY', c:'var(--hot)'},
+  sprint:{n:'冲刺日 SPRINT', c:'var(--red)'},
+  rest:{n:'休息日 REST', c:'#4A4A44'}, R:{n:'休息日 REST', c:'#4A4A44'}
+};
+const SPANS = [[1,12],[13,24],[25,36],[37,48],[49,60]];
+const KEY = 'rebuild60_v1';
+let LOG = {};
+try{ LOG = JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ LOG={}; }
+const isDone = d => !!LOG['d'+d];
+const daySec = p => (p.c||[]).reduce((s,x)=>s+TS[x[0]][0],0);
+const fmtT = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+/* 周分组: W1-8 = 每7天, FIN = D57-60 */
+const WEEKS = [];
+for(let w=0; w<8; w++) WEEKS.push({w:w+1, fin:false, days:PLAN.filter(p=>p.d>=w*7+1 && p.d<=w*7+7)});
+WEEKS.push({w:9, fin:true, days:PLAN.filter(p=>p.d>=57)});
+const app = document.getElementById('app');
+function totalMin(){ let s=0; PLAN.forEach(p=>{ if(isDone(p.d)) s+=daySec(p); }); return s; }
+function firstOpenWeek(){ for(const w of WEEKS){ if(!w.days.every(p=>isDone(p.d))) return w.w; } return 9; }
+function render(){
+  app.innerHTML='';
+  const ow = firstOpenWeek();
+  WEEKS.forEach(wk=>{
+    const sec=document.createElement('section');
+    sec.className='week'+(wk.fin?' fin':'')+(wk.w===ow?' open':'');
+    sec.id='week'+wk.w;
+    if(wk.days.every(p=>isDone(p.d))) sec.classList.add('done');
+    const wname = wk.fin ? '终局冲刺' : 'WEEK 0'+wk.w;
+    const wsub = wk.fin ? 'FINALE /// 4-DAY SPRINT TO THE FINISH' : 'D'+String(wk.days[0].d).padStart(2,'0')+'–'+String(wk.days[wk.days.length-1].d).padStart(2,'0');
+    const dots = wk.days.map(p=>`<i class="${isDone(p.d)?'on':(p.t==='R'?'rest':'')}"></i>`).join('');
+    sec.innerHTML=`<div class="week-head"><div class="wk-tag">${wk.fin?'FIN':'W'+wk.w}</div>
+      <div class="wt"><div class="t">${wname}</div><div class="d">${wsub}</div></div>
+      <div class="wdots">${dots}</div><span class="chev">▸</span></div><div class="week-body"></div>`;
+    const body=sec.querySelector('.week-body');
+    wk.days.forEach(p=>{
+      const on=isDone(p.d), t=TYPE[p.t];
+      const el=document.createElement('div');
+      el.className='day'+(p.t==='R'?' rest':'')+(p.d===60?' fin':'')+(on?' on':'');
+      let items='';
+      if(p.t==='R'){
+        items=`<div class="item"><span class="nm">完全休息 · 躺平也是计划的一部分</span></div>`;
+      }else{
+        items=p.c.map((x,i)=>`<div class="item"><span class="no">${'①②'[i]}</span><span class="od">原D${String(x[0]).padStart(3,'0')}</span><span class="nm">${x[1]}</span><span class="tm">${x[2]}</span></div>`).join('');
+      }
+      const label = p.d===60 ? '毕业日 GRADUATION' : t.n;
+      const lcol = p.t==='R' ? '#4A4A44' : t.c;
+      const sum = p.t==='R' ? '' : `<span class="tm" style="color:${lcol};font-family:var(--mono);font-size:12px;font-weight:700">${fmtT(daySec(p))}</span>`;
+      el.innerHTML=`<div class="dbar" style="background:${lcol};color:${lcol}"></div>
+        <div class="day-row">
+          <div class="dnum">${String(p.d).padStart(2,'0')}<small>DAY</small></div>
+          <div class="l-main"><div class="dtype" style="color:${lcol}">${label}</div>${items}</div>
+          ${sum}<div class="check"><svg viewBox="0 0 24 24"><polyline points="4 12.5 10 18.5 20 6"/></svg></div>
+        </div>`;
+      el.querySelector('.day-row').addEventListener('click',()=>toggle(p,el,wk));
+      body.appendChild(el);
+    });
+    sec.querySelector('.week-head').addEventListener('click',()=>sec.classList.toggle('open'));
+    app.appendChild(sec);
+  });
+  updateHud();
+}
+function updateHud(){
+  const ses=PLAN.filter(p=>p.t!=='R'&&isDone(p.d)).length;
+  const rst=PLAN.filter(p=>p.t==='R'&&isDone(p.d)).length;
+  document.getElementById('hSes').innerHTML=ses+'<em>/52</em>';
+  document.getElementById('hRest').innerHTML=rst+'<em>/8</em>';
+  document.getElementById('hMin').innerHTML=Math.round(totalMin()/60)+'<em>min</em>';
+  document.getElementById('phases').innerHTML=SPANS.map(([a,b])=>{
+    let tot=0,dn=0;
+    PLAN.forEach(p=>{ if(p.d>=a&&p.d<=b){ tot+=daySec(p); if(isDone(p.d)) dn+=daySec(p); }});
+    return `<span><i style="width:${tot?dn/tot*100:0}%"></i></span>`;
+  }).join('');
+}
+function toggle(p,el,wk){
+  const id='d'+p.d;
+  LOG[id]=!LOG[id];
+  const sec=document.getElementById('week'+wk.w);
+  if(LOG[id]){
+    localStorage.setItem(KEY,JSON.stringify(LOG));
+    el.classList.add('on');
+    const r=el.querySelector('.check').getBoundingClientRect();
+    burst(r.left+14,r.top+14,14);
+    flash();
+    if(p.d===60){
+      setTimeout(()=>{ burst(innerWidth/2,innerHeight*.32,60); flash(); toast('/// MISSION COMPLETE · 100/100'); },200);
+    }else if(wk.days.every(x=>isDone(x.d))){
+      setTimeout(()=>{ burst(innerWidth/2,innerHeight*.32,40); flash(); toast((wk.fin?'FINALE':'WEEK 0'+wk.w)+' /// CLEARED'); },220);
+      sec.classList.add('done');
+    }else{
+      toast(p.t==='R'?'REST /// 已休整':'DAY '+p.d+' /// CLEARED');
+    }
+  }else{
+    delete LOG[id];
+    localStorage.setItem(KEY,JSON.stringify(LOG));
+    el.classList.remove('on');
+    sec.classList.remove('done');
+  }
+  refreshDots(wk.w);
+  updateHud();
+}
+function refreshDots(w){
+  const wk=WEEKS.find(x=>x.w===w), sec=document.getElementById('week'+w);
+  if(!sec) return;
+  sec.querySelectorAll('.wdots i').forEach((dot,k)=>{ dot.classList.toggle('on',isDone(wk.days[k].d)); });
+}
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1900); }
+function flash(){ const f=document.getElementById('flash'); f.style.animation='none'; f.offsetHeight; f.style.animation='flashAnim .5s ease forwards'; }
+const CF_COLORS=['#D6FF3D','#FF6B35','#43E8FF','#FFD23D','#FF3D5A','#F2F2EC'];
+function burst(x,y,n){
+  for(let k=0;k<n;k++){
+    const p=document.createElement('div'); p.className='cf';
+    const s=4+Math.random()*5,c=CF_COLORS[Math.floor(Math.random()*CF_COLORS.length)];
+    p.style.cssText=`left:${x}px;top:${y}px;width:${s}px;height:${s}px;background:${c}`;
+    const tx=(Math.random()-.5)*240,ty=-Math.random()*190-40,rot=(Math.random()-.5)*560;
+    document.body.appendChild(p);
+    p.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${tx}px,${ty}px) rotate(${rot}deg)`,opacity:0}],{duration:650+Math.random()*450,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>p.remove();
+  }
+}
+document.getElementById('btnReset').addEventListener('click',()=>{
+  if(confirm('清空全部打卡记录？60 天从 Day 01 重新开始。')){ LOG={}; localStorage.removeItem(KEY); render(); toast('/// SYSTEM RESET'); }
+});
+render();
+</script>
+</body>
+</html>
